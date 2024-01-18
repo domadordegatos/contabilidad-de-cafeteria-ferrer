@@ -35,8 +35,11 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-6">Conteo Final</div>
-                <div class="col-6"><input type="number" id="conteo_final" class="form-control form-control-sm" placeholder="$...."></div>
+                <div class="col-6"><label for="">Compras Fiadas</label>
+                    <input type="number" id="conteo_fiado" class="form-control form-control-sm" placeholder="$...."></div>
+                <div class="col-6">
+                <label for="">Conteo Final</label>
+                    <input type="number" id="conteo_final" class="form-control form-control-sm" placeholder="$...."></div>
             </div>
             <div class="row mt-3">
                 <div class="col-6"><button onclick="ver_dia_temp()" type="button" name="" id="" class="btn btn-primary btn-primary-sm btn-block">Ver día <i class="pl-2 bi bi-search"></i></button></div>
@@ -64,12 +67,13 @@
 <script>
 
     function cerrar_dia(){
-        if($('#base_moneda').val()=='' || $('#base_billete').val()=='' || $('#conteo_final').val()==''){
+        if($('#base_moneda').val()=='' || $('#base_billete').val()=='' || $('#conteo_final').val()=='' || $('#conteo_fiado').val()==''){
                 alertify.error("Debes ingresar los ajustes del día");
             }else{
         cadena = "form1=" + $('#base_moneda').val()+
                 "&form2=" + $('#base_billete').val()+
-                "&form3=" + $('#conteo_final').val();
+                "&form3=" + $('#conteo_final').val()+
+                "&form4=" + $('#conteo_fiado').val();
         console.log(cadena);
         $.ajax({
             type: "POST",

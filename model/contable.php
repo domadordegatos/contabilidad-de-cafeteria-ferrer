@@ -177,6 +177,7 @@ class contable
         $moneda = $_POST['form1'];
         $billete = $_POST['form2'];
         $total_caja = $_POST['form3'];
+        $total_fiado = $_POST['form4'];
         //consultamos si ya se cargo la base del dia
         $result = self::consultar_datos_base_cartera(1);
         if (mysqli_num_rows($result) <= 0) { //no encontro la base del dia, la insertamos
@@ -184,7 +185,7 @@ class contable
             $result = mysqli_query($conexion, $sql);
             if ($result) {
                 $result = self::consultar_datos_base_cartera(2);
-                $resultado = self::crear_registro_dia($result[0], $total_caja);
+                $resultado = self::crear_registro_dia($result[0], $total_caja,$total_fiado);
             } else {
                 echo 2;
             }
@@ -193,14 +194,14 @@ class contable
             $sql = "UPDATE base_cartera SET valor_moneda = '$moneda', valor_billete = '$billete' WHERE id_base = '$ver[0]' and fecha = CURDATE()";
             $result = mysqli_query($conexion, $sql);
             if ($result) {
-                $resultado = self::crear_registro_dia($ver[0], $total_caja);
+                $resultado = self::crear_registro_dia($ver[0], $total_caja,$total_fiado);
             } else {
                 echo 4;
             }
         }
     }
 
-    public function crear_registro_dia($id_base_cartera, $total_caja)
+    public function crear_registro_dia($id_base_cartera, $total_caja, $total_fiado)
     {
         require_once "conexion.php";
         $conexion = conexion();
@@ -208,7 +209,7 @@ class contable
         $result = self::consultar_datos_registro_diario(1);
         if (mysqli_num_rows($result) <= 0) { //no encontro registro del dia, la insertamos
             $r1 = self::proceso_matematico_de_registro_del_dia();
-            $sql = "INSERT INTO registro_diario VALUES ('',CURDATE(),CURTIME(),'$id_base_cartera','$r1[1]','$r1[2]','$total_caja','$r1[3]')";
+            $sql = "INSERT INTO registro_diario VALUES ('',CURDATE(),CURTIME(),'$id_base_cartera','$r1[1]','$r1[2]','$total_caja','$r1[3]','$total_fiado')";
             $result = mysqli_query($conexion, $sql);
             if ($result) {
                 echo 5;
@@ -218,7 +219,7 @@ class contable
         } else { //encontramos el registro
             $result = self::consultar_datos_registro_diario(2);
             $r1 = self::proceso_matematico_de_registro_del_dia();
-            $sql = "UPDATE registro_diario SET total_cartera = '$total_caja' , ganancias = '$r1[1]', perdidas = '$r1[2]', ganancia_real = '$r1[3]' WHERE $result[0] = id_registro and  fecha = CURDATE()";
+            $sql = "UPDATE registro_diario SET total_cartera = '$total_caja' , ganancias = '$r1[1]', perdidas = '$r1[2]', ganancia_real = '$r1[3]', total_fiado = '$total_fiado' WHERE $result[0] = id_registro and  fecha = CURDATE()";
             $result = mysqli_query($conexion, $sql);
             if ($result) {
                 echo 7;
@@ -281,7 +282,7 @@ class contable
         while ($ver1 = mysqli_fetch_row($result)) {
             $tabla = $ver1[0] . "||" . //id
                 $ver1[1] . "||" . //nombre
-                $ver1[3] . "||". //valorxunidad
+                $ver1[3] . "||" . //valorxunidad
                 $ver1[6] . "||"; //tipo
             $_SESSION['tabla_cargue'][] = $tabla;
         }
@@ -313,14 +314,14 @@ class contable
         return $ver1 = mysqli_fetch_row($result);
     }
 
-    public function obtener_penultimo_registro($id_producto,$opcion)
+    public function obtener_penultimo_registro($id_producto, $opcion)
     {
         require_once "conexion.php";
         $conexion = conexion();
-        if($opcion == 1){
+        if ($opcion == 1) {
             $sql = "SELECT * FROM carga_de_inventario WHERE id_producto = '$id_producto' ORDER BY id_carga DESC LIMIT 1";
             $result = mysqli_query($conexion, $sql);
-        }else if($opcion == 2){
+        } else if ($opcion == 2) {
             $sql = "SELECT * FROM carga_de_inventario WHERE id_producto = '$id_producto' ORDER BY id_carga DESC LIMIT 1 OFFSET 1";
             $result = mysqli_query($conexion, $sql);
         }
@@ -334,7 +335,12 @@ class contable
         $perdida = $_POST['form2'];
         $id_producto = $_POST['form3'];
         $restantes = $_POST['form4'];
-        if($restantes == ''){$restantes = 0;}if($perdida == ''){$perdida = 0;}
+        if ($restantes == '') {
+            $restantes = 0;
+        }
+        if ($perdida == '') {
+            $perdida = 0;
+        }
         require_once "conexion.php";
         $conexion = conexion();
         //buscamos si el productos es contable o no
@@ -344,70 +350,82 @@ class contable
         $result = mysqli_query($conexion, $sql);
         if (mysqli_num_rows($result) <= 0) { //no encontro, realizar insertado
             if ($datos_producto[6] == 2) { //proceso para no cotables
-                $penultimo_registro = self::obtener_penultimo_registro($id_producto,1);
+                $penultimo_registro = self::obtener_penultimo_registro($id_producto, 1);
                 if ($penultimo_registro != '') { //existe el penultimo registro
                     $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes', hora = CURTIME() WHERE id_carga = '$penultimo_registro[0]'";
                     $result = mysqli_query($conexion, $sql);
                 }
             }
-            if ($datos_producto[6] == 2) {// es incontable
+            if ($datos_producto[6] == 2) { // es incontable
                 $suma_ingreso_restantes = $ingreso + $restantes;
                 $sql = "INSERT INTO carga_de_inventario VALUES ('',CURDATE(),CURTIME(),'$id_producto','$ingreso','$perdida','$restantes','$suma_ingreso_restantes',null)";
                 $result = mysqli_query($conexion, $sql);
-                if ($result) { echo 1; } else { echo 2; }
-            }else{//es contable
+                if ($result) {
+                    echo 1;
+                } else {
+                    echo 2;
+                }
+            } else { //es contable
                 $suma_ingreso_restantes = $ingreso + $restantes;
                 $sql = "INSERT INTO carga_de_inventario VALUES ('',CURDATE(),CURTIME(),'$id_producto','$ingreso','$perdida',null,null,null)";
                 $result = mysqli_query($conexion, $sql);
-                if ($result) { echo 1; } else { echo 2; }
+                if ($result) {
+                    echo 1;
+                } else {
+                    echo 2;
+                }
             }
-            
         } else { //eencontro actualizar por el id
-                if($datos_producto[6] == 2 && $ingreso == 0){ // se va a cerrar inventario
-                    $penultimo_registro = self::obtener_penultimo_registro($id_producto,1);
-                    if($penultimo_registro[4]== 0){//si el ultimo registro tiene un cero en los pedidos, solo hacemos actualizacion
-                        $penultimo_registro = self::obtener_penultimo_registro($id_producto,2); //actualizamos valores del ultimo
-                        $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'"; //actualizamos el acumulado del penultimo
-                        $result = mysqli_query($conexion, $sql);
+            if ($datos_producto[6] == 2 && $ingreso == 0) { // se va a cerrar inventario
+                $penultimo_registro = self::obtener_penultimo_registro($id_producto, 1);
+                if ($penultimo_registro[4] == 0) { //si el ultimo registro tiene un cero en los pedidos, solo hacemos actualizacion
+                    $penultimo_registro = self::obtener_penultimo_registro($id_producto, 2); //actualizamos valores del ultimo
+                    $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'"; //actualizamos el acumulado del penultimo
+                    $result = mysqli_query($conexion, $sql);
 
-                        $suma_ingreso_restantes = $ingreso + $restantes;
-                        $penultimo_registro = self::obtener_penultimo_registro($id_producto,1); //actualizamos valores del ultimo
-                        $sql = "UPDATE carga_de_inventario SET restante = '$restantes', hora = CURTIME(), bodega = '$suma_ingreso_restantes' WHERE id_carga = '$penultimo_registro[0]'";
-                        $result = mysqli_query($conexion, $sql);
-                        if($result){ echo 3;}else{ echo 4;}
-                    }else{// es un insertado normal
-                        $penultimo_registro = self::obtener_penultimo_registro($id_producto,1);
-                        $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'"; //actualizamos el acumulado del penultimo
-                        $result = mysqli_query($conexion, $sql);
+                    $suma_ingreso_restantes = $ingreso + $restantes;
+                    $penultimo_registro = self::obtener_penultimo_registro($id_producto, 1); //actualizamos valores del ultimo
+                    $sql = "UPDATE carga_de_inventario SET restante = '$restantes', hora = CURTIME(), bodega = '$suma_ingreso_restantes' WHERE id_carga = '$penultimo_registro[0]'";
+                    $result = mysqli_query($conexion, $sql);
+                    if ($result) {
+                        echo 3;
+                    } else {
+                        echo 4;
+                    }
+                } else { // es un insertado normal
+                    $penultimo_registro = self::obtener_penultimo_registro($id_producto, 1);
+                    $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'"; //actualizamos el acumulado del penultimo
+                    $result = mysqli_query($conexion, $sql);
 
-                        $suma_ingreso_restantes = $ingreso + $restantes;
-                        $sql = "INSERT INTO carga_de_inventario VALUES ('',CURDATE(),CURTIME(),'$id_producto',0,0,'$restantes','$suma_ingreso_restantes',null)";
-                        $result = mysqli_query($conexion, $sql);
-                        if($result){ echo 3;}else{ echo 4;}
+                    $suma_ingreso_restantes = $ingreso + $restantes;
+                    $sql = "INSERT INTO carga_de_inventario VALUES ('',CURDATE(),CURTIME(),'$id_producto',0,0,'$restantes','$suma_ingreso_restantes',null)";
+                    $result = mysqli_query($conexion, $sql);
+                    if ($result) {
+                        echo 3;
+                    } else {
+                        echo 4;
                     }
-                    
+                }
+            } else { //ingreso normal, diferente de cierre de inventario
+                $penultimo_registro = self::obtener_penultimo_registro($id_producto, 1);
+                if ($datos_producto[6] == 2 && $penultimo_registro[4] == 0) {
+                    return 5;
+                }
+                if ($datos_producto[6] == 2) { //es incontable
+                    $suma_ingreso_restantes = $ingreso + $restantes;
+                    $sql = "UPDATE carga_de_inventario SET pedidos = '$ingreso', perdidas = '$perdida', hora = CURTIME(), restante = '$restantes', bodega = '$suma_ingreso_restantes' WHERE id_producto = '$id_producto' and fecha = CURDATE()";
+                    $result = mysqli_query($conexion, $sql);
+                } else { //es contable
+                    $sql = "UPDATE carga_de_inventario SET pedidos = '$ingreso', perdidas = '$perdida', hora = CURTIME() WHERE id_producto = '$id_producto' and fecha = CURDATE()";
+                    $result = mysqli_query($conexion, $sql);
+                }
 
-                                
-                }else{//ingreso normal, diferente de cierre de inventario
-                    $penultimo_registro = self::obtener_penultimo_registro($id_producto,1);
-                    if($datos_producto[6] == 2 && $penultimo_registro[4] == 0){
-                        return 5;
-                    }
-                    if ($datos_producto[6] == 2) { //es incontable
-                        $suma_ingreso_restantes = $ingreso + $restantes;
-                        $sql = "UPDATE carga_de_inventario SET pedidos = '$ingreso', perdidas = '$perdida', hora = CURTIME(), restante = '$restantes', bodega = '$suma_ingreso_restantes' WHERE id_producto = '$id_producto' and fecha = CURDATE()";
-                        $result = mysqli_query($conexion, $sql);
-                    }else{//es contable
-                        $sql = "UPDATE carga_de_inventario SET pedidos = '$ingreso', perdidas = '$perdida', hora = CURTIME() WHERE id_producto = '$id_producto' and fecha = CURDATE()";
-                        $result = mysqli_query($conexion, $sql);
-                    }
-                
                 if ($result) {
                     if ($datos_producto[6] == 2) { //proceso para no cotables
-                        $penultimo_registro = self::obtener_penultimo_registro($id_producto,2);
+                        $penultimo_registro = self::obtener_penultimo_registro($id_producto, 2);
                         //ya hay registros hoy
-                            $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'";
-                            $result = mysqli_query($conexion, $sql);
+                        $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'";
+                        $result = mysqli_query($conexion, $sql);
                     }
                     echo 3;
                 } else {
