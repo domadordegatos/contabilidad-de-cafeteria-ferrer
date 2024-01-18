@@ -38,7 +38,7 @@ $ver3 = mysqli_fetch_row($result3);
             <th scope="col">Precio U.</th>
             <th scope="col">Ingreso</th>
             <th scope="col">Perdida</th>
-            <th scope="col">Ganancias Caja</th>
+            <th scope="col">Ventas Hoy</th>
             <th>Perdidas</th>
             <th>Gancia Real</th>
         </tr>
@@ -83,7 +83,7 @@ $ver3 = mysqli_fetch_row($result3);
                                             echo "$" . number_format(($dat[0] - $dat[1]) * ($dat[4]));
                                         } ?></td><!-- se muesta si el ultimo campo es null o es de tipo contable -->
                 <td class="text-center"><?php if ($tipo == 2 || $tipo == 1) {
-                                            echo "$" . number_format($dat[1] * $dat[5]);
+                                            echo "$" . number_format($dat[1] * $dat[4]);
                                         } ?></td>
                 <td class="text-center"><?php if ($tipo == 2) {
                                             echo "$" . number_format((($suma_bodega_menos_restantes - $dat[1]) * ($dat[5])));
@@ -99,7 +99,7 @@ $ver3 = mysqli_fetch_row($result3);
             }
 
             if ($tipo == 2 || $tipo == 1) {
-                $perdidas = $perdidas + ($dat[1] * $dat[5]);
+                $perdidas = $perdidas + ($dat[1] * $dat[4]);
             }
 
             if ($tipo == 2) {
@@ -107,7 +107,6 @@ $ver3 = mysqli_fetch_row($result3);
             } else if ($tipo == 1) {
                 $ganancia_real = $ganancia_real + ((($dat[0] - $dat[1]) * ($dat[5])));
             }
-            
         }
     endif;
     if (isset($ganancia_caja)) { ?>
@@ -153,46 +152,29 @@ $ver3 = mysqli_fetch_row($result3);
     <?php if (isset($ver2)) { ?>
         <tr class="table-info">
             <td colspan="3"></td>
-            <td colspan="3" class="text-right"><b>DINERO EN CAJA SIN (INCONTABLES)</b></td>
-            <td>$<?php echo isset($ganancia_caja_sin_contables) ? number_format($ganancia_caja_sin_contables) : 0; ?></td>
-        </tr>
-        <tr class="table-info">
-            <td colspan="3"></td>
-            <td colspan="3" class="text-right"><b>GANANCIA REAL SIN (INCONTABLES)</b></td>
-            <td>$<?php echo isset($ganancia_real_sin_contables) ? number_format($ganancia_real_sin_contables) : 0; ?></td>
-        </tr>
-        <tr class="table-info">
-            <td colspan="3"></td>
-            <td colspan="3" class="text-right"><b>DIFERENCIA DE (GANANCIAS CAJA) Y CONTEO FINAL</b></td>
-            <td>$<?php $resultado = isset($ver3[6]) && isset($ganancia_caja) ? $ver3[6] - $ganancia_caja : 0;
-                    echo number_format($resultado); ?></td>
-        </tr>
-        <tr class="table-info">
-            <td colspan="3"></td>
-            <td colspan="3" class="text-right"><b>DIFERENCIA DE GANANCIAS REALES SIN (INCONTABLES) Y CAJA</b></td>
-            <td>$<?php $resultado = isset($ver3[6]) && isset($ganancia_real_sin_contables) ? $ver3[6] - $ganancia_real_sin_contables : 0;
-                    echo number_format($resultado);
+            <td colspan="3" class="text-right"><b>DINERO DE VENTAS</b></td>
+            <td>$<?php echo isset($ganancia_caja) ? number_format($ganancia_caja) : 0;
                     ?></td>
         </tr>
-    <?php } ?>
-    <tr>
-        <td colspan="7" class="text-center">-</td>
-    </tr>
-    <?php if (isset($ver3)) { ?>
         <tr class="table-info">
-            <td colspan="5"></td>
-            <td class="text-right"><b>DINERO FIADO</b></td>
+            <td colspan="3"></td>
+            <td colspan="3" class="text-right"><b>DINERO FIADO</b></td>
             <td>$<?php echo number_format($ver3[8]); ?></td>
         </tr>
         <tr class="table-info">
-            <td colspan="5"></td>
-            <td class="text-right"><b>(GANANCIAS CAJA - DINERO FIADO)</b></td>
-            <td>$<?php $resultado = isset($ganancia_caja) && isset($ver3[8]) ? $ganancia_caja - $ver3[8] : 0;
-                    echo number_format($resultado);
+            <td colspan="3"></td>
+            <td colspan="3" class="text-right"><b>DINERO VENTAS - DINERO FIADO</b></td>
+            <td>$<?php $resultado = isset($ganancia_caja) && isset($ver3[8]) ? number_format($ganancia_caja - $ver3[8]) : 0;
+                    echo $resultado; ?></td>
+        </tr>
+        <tr class="table-info">
+            <td colspan="3"></td>
+            <td colspan="3" class="text-right"><b>DIFERENCIA VENTAS Y CAJA</b></td>
+            <td>$<?php $resultado = isset($ganancia_caja) && isset($ver3[6]) ? number_format($ganancia_caja - $ver3[6]) : 0;
+                    echo $resultado;
                     ?></td>
         </tr>
     <?php } ?>
-
 </table>
 
 <style>
