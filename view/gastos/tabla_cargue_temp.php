@@ -15,8 +15,9 @@ session_start();
 
     </thead>
     <?php
-    if (isset($_SESSION['cargar_tabla_temp_de_egresos'])) :
-        foreach (@$_SESSION['cargar_tabla_temp_de_egresos'] as $key) {
+    if (isset($_SESSION['cargar_tabla_temp_de_egresos_por_fecha'])) :
+        $total=0;
+        foreach (@$_SESSION['cargar_tabla_temp_de_egresos_por_fecha'] as $key) {
             $dat = explode("||", $key);
     ?>
             <tr>
@@ -29,8 +30,13 @@ session_start();
                 <td class="text-center"><button class="btn btn-sm btn-primary" onclick="obtener_datos_del_egreso(<?php echo $dat[0]; ?>)"><i class="bi bi-pencil-square"></i></button></td>
             </tr>
 
-    <?php }
+    <?php $total = $total + $dat[4]; }
     endif; ?>
+    <tr class="table-info">
+                <td></td>
+                <td class="text-right">$<?php echo number_format($total) ?></td>
+                <td colspan="5" class="text-center"></td>
+            </tr>
 </table>
 
 <style>

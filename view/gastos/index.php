@@ -1,4 +1,6 @@
-<?php require_once "../home/navbar.php"; ?>
+<?php require_once "../home/navbar.php"; 
+date_default_timezone_set('America/Bogota');
+$fecha_actual = date("Y-m-d");?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -9,7 +11,7 @@
     <?php require_once "../../model/libraries/lib.php"; ?>
 </head>
 
-<body onload="buscarlistadeegresos()">
+<body onload="buscar_registros_por_fechas()">
     <div class="containe mx-4">
         <div class="contenedor w-100 mt-3 d-flex">
             <div class="separador1 w-25">
@@ -54,8 +56,33 @@
                         <button type="button" name="" id="" class="btn btn-success btn-sm btn-block" onclick="procesoagregadoactualizado(2)">Actualizar</button>
                     </div>
                 </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4 class="text-center">Busqueda por Fechas</h4>
+                    </div>
+                </div>
+
+                <div class="row mx-2 mt-2">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="">Fecha Inicio</label>
+                            <input type="date" class="form-control" id="fechainicio" value="<?php echo $fecha_actual; ?>">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="">Fecha Fin</label>
+                            <input type="date" class="form-control" id="fechafin" max="<?php echo $fecha_actual; ?>" value="<?php echo $fecha_actual; ?>">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label for="">.</label>
+                        <button type="button" onclick="buscar_registros_por_fechas()" class="btn btn-primary btn-sm btn-block">Buscar</button>
+                    </div>
+                </div>
+
             </div>
-            <div class="separador2 w-75 mx-5" id="cargue_de_tabla">
+            <div class="separador2 w-75 mx-5" id="cargue_tabla" style="height: 520px; overflow: auto; overflow-x: auto;">
 
             </div>
         </div>
@@ -66,25 +93,43 @@
 </html>
 
 <script>
-
-    function obtener_datos_del_egreso(id){
-        cadena = "form1=" + id;
-            $.ajax({
-                type: "POST",
-                url: "../../controller/obtener_datos_del_egreso.php", //validacion de datos de registro
-                data: cadena,
-                success: function(r) {
-                    dato = jQuery.parseJSON(r);
-                    $('#descripcion').val(dato['2']);
-                    $('#id').val(dato['1']);
-                    $('#valor').val(dato['3']);
-                    $('#tipo').val(dato['5']);
-                    $('#estado').val(dato['4']);
+    function buscar_registros_por_fechas() {
+        cadena = "form1=" + $('#fechainicio').val() +
+                 "&form2=" + $('#fechafin').val();
+        $.ajax({
+            type: "POST",
+            url: "../../controller/cargar_tabla_temp_de_egresos_por_fecha.php",
+            data:cadena,
+            success: function (r) {
+                if (r == 1) {
+                    $('#cargue_tabla').load("tabla_cargue_temp.php");
+                    alertify.success("Registros encontrados");
+                    return false;
+                }else if( r==2 ){
+                    alertify.error("No hay registros de estas fechas");
                 }
-            });
+            }
+        });
     }
-    
-    function buscarlistadeegresos (){
+
+    function obtener_datos_del_egreso(id) {
+        cadena = "form1=" + id;
+        $.ajax({
+            type: "POST",
+            url: "../../controller/obtener_datos_del_egreso.php", //validacion de datos de registro
+            data: cadena,
+            success: function(r) {
+                dato = jQuery.parseJSON(r);
+                $('#descripcion').val(dato['2']);
+                $('#id').val(dato['1']);
+                $('#valor').val(dato['3']);
+                $('#tipo').val(dato['5']);
+                $('#estado').val(dato['4']);
+            }
+        });
+    }
+
+    function buscarlistadeegresos() {
         $.ajax({
             type: "POST",
             url: "../../controller/cargar_tabla_temp_de_egresos.php", //validacion de datos de registro
@@ -124,7 +169,7 @@
                         alertify.error("Error al agregar");
                     } else if (r == 3) {
                         buscarlistadeegresos();
-                        alertify.success("Egreso Actualizado");
+                        alertify.success("Egreso Actualizado, recuerda, volver a buscar");
                     } else if (r == 4) {
                         alertify.error("Error al Actualizar");
                     }

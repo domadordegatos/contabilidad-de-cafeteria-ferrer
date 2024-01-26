@@ -2,13 +2,14 @@
 session_start();
 require_once "../../model/libraries/lib.php";
 
-unset($_SESSION['ver_dia_temp']);
+unset($_SESSION['ver_dia_temp_para_reporte']);
+$variableRecibida = $_GET['fecha'];
 require_once "../../model/conexion.php";
 $conexion = conexion();
 $sql = "SELECT carga_de_inventario.pedidos, carga_de_inventario.perdidas, productos.nombre, productos.cantidadxpaquete, productos.valorxunidad, productos.precio_compra,
 productos.tipo, carga_de_inventario.acumulante, carga_de_inventario.bodega FROM carga_de_inventario 
 JOIN productos ON productos.id_producto = carga_de_inventario.id_producto 
-WHERE fecha = CURDATE() ORDER BY carga_de_inventario.id_producto, carga_de_inventario.id_carga";
+WHERE fecha = '$variableRecibida' ORDER BY carga_de_inventario.id_producto, carga_de_inventario.id_carga";
 
 $result = mysqli_query($conexion, $sql);
 while ($ver1 = mysqli_fetch_row($result)) {
@@ -21,7 +22,7 @@ while ($ver1 = mysqli_fetch_row($result)) {
         $ver1[6] . "||" . //6tipo
         $ver1[7] . "||" . //7acumulante
         $ver1[8] . "||";  //8bodega
-    $_SESSION['ver_dia_temp'][] = $tabla;
+    $_SESSION['ver_dia_temp_para_reporte'][] = $tabla;
 }
 $sql2 = "SELECT * FROM base_cartera WHERE fecha = CURDATE()";
 $result2 = mysqli_query($conexion, $sql2);
@@ -45,13 +46,13 @@ $ver3 = mysqli_fetch_row($result3);
 
     </thead>
     <?php
-    if (isset($_SESSION['ver_dia_temp'])) :
+    if (isset($_SESSION['ver_dia_temp_para_reporte'])) :
         $ganancia_caja = 0;
         $perdidas = 0;
         $ganancia_real = 0;
         $suma_bodega_menos_restantes = 0;
         $tipo = 0;
-        foreach (@$_SESSION['ver_dia_temp'] as $key) {
+        foreach (@$_SESSION['ver_dia_temp_para_reporte'] as $key) {
             $dat = explode("||", $key);
 
             if ($dat[7] != null && $dat[6] == 2) {
@@ -170,7 +171,7 @@ $ver3 = mysqli_fetch_row($result3);
         <tr class="table-info">
             <td colspan="3"></td>
             <td colspan="3" class="text-right"><b>DIFERENCIA VENTAS Y CAJA</b></td>
-            <td>$<?php $resultado = isset($ganancia_caja) && isset($ver3[6]) ? number_format($ver3[6] - $ganancia_caja) : 0;
+            <td>$<?php $resultado = isset($ganancia_caja) && isset($ver3[6]) ? number_format($ganancia_caja - $ver3[6]) : 0;
                     echo $resultado;
                     ?></td>
         </tr>

@@ -11,7 +11,7 @@
 
 <body onload="cargue()" style="overflow-x: hidden;">
     <div class="contenedor w-100 d-flex">
-        <div class="separacion1 w-75 px-5 mt-2" id="cargue_tabla">
+        <div class="separacion1 w-75 px-5 mt-2" id="cargue_tabla" class="scrroll" style="height: 600px; overflow: auto; overflow-x: auto;">
 
         </div>
         <div class="separacion2 w-25 px-2">

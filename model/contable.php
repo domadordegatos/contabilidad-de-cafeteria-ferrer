@@ -1,6 +1,88 @@
 <?php
 class contable
 {
+
+    public function cargue_ingresos_egresos_reporte(){
+        unset($_SESSION['cargue_ingresos_egresos_reporte']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $inicio = $_POST['form1'];$fin = $_POST['form2'];
+        $sql = "SELECT * FROM registro_diario WHERE fecha >= '$inicio' AND fecha <= '$fin'";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //
+                $ver1[1] . "||" . //
+                $ver1[2] . "||" . //
+                $ver1[3] . "||" . //
+                $ver1[4] . "||" . //
+                $ver1[5] . "||" . //
+                $ver1[6] . "||" . //
+                $ver1[7] . "||" . //
+                $ver1[8] . "||" ; //
+            $_SESSION['cargue_ingresos_egresos_reporte'][] = $tabla;
+        }
+        if (isset($_SESSION['cargue_ingresos_egresos_reporte'])){
+            echo 1;
+        }else{
+            echo 2;
+        }
+    }
+
+    public function cargar_tabla_temp_de_egresos_por_fecha()
+    {
+        $inicio = $_POST['form1'];$fin = $_POST['form2'];
+        unset($_SESSION['cargar_tabla_temp_de_egresos_por_fecha']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $sql = "SELECT * FROM egresos 
+        JOIN estados ON estados.id_estado = egresos.estado
+        JOIN tipos_productos ON tipos_productos.id_tipo = egresos.tipo
+        WHERE fecha >= '$inicio' AND fecha <= '$fin'
+        ORDER BY fecha, hora DESC";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //
+                $ver1[1] . "||" . //
+                $ver1[2] . "||" . //
+                $ver1[3] . "||" . //
+                $ver1[4] . "||" . //
+                $ver1[8] . "||" . //
+                $ver1[10] . "||"; //
+            $_SESSION['cargar_tabla_temp_de_egresos_por_fecha'][] = $tabla;
+        }
+        if (isset($_SESSION['cargar_tabla_temp_de_egresos_por_fecha'])){
+            echo 1;
+        }else{
+            echo 2;
+        }
+    }
+
+    public function cargue_inventario_incontables(){
+        unset($_SESSION['cargue_inventario_incontables']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $sql = "SELECT carga_de_inventario.fecha, carga_de_inventario.hora, productos.nombre, productos.cantidadxpaquete, 
+        carga_de_inventario.restante FROM carga_de_inventario
+        JOIN productos ON productos.id_producto = carga_de_inventario.id_producto 
+        WHERE pedidos = 0 AND acumulante IS NULL AND productos.estado =  1";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . // fecha
+                $ver1[1] . "||" . //hora
+                $ver1[2] . "||" . //nombre
+                $ver1[3] . "||" . //cantidad x paquete
+                $ver1[4] . "||" ; // restante
+            $_SESSION['cargue_inventario_incontables'][] = $tabla;
+        }
+        if (isset($_SESSION['cargue_inventario_incontables'])){
+            echo 1;
+        }else{
+            echo 2;
+        }
+
+    }
+
+
     public function obtener_datos_del_egreso()
     {
         require_once "conexion.php";
@@ -149,16 +231,41 @@ class contable
     {
         require_once "conexion.php";
         $conexion = conexion();
-        $sql = "SELECT * FROM carga_de_inventario
-            JOIN productos ON productos.id_producto =  carga_de_inventario.id_producto WHERE fecha = CURDATE()";
+        $sql = "SELECT carga_de_inventario.pedidos, carga_de_inventario.perdidas, productos.nombre, productos.cantidadxpaquete, productos.valorxunidad, productos.precio_compra,
+        productos.tipo, carga_de_inventario.acumulante, carga_de_inventario.bodega FROM carga_de_inventario 
+        JOIN productos ON productos.id_producto = carga_de_inventario.id_producto 
+        WHERE fecha = CURDATE() ORDER BY carga_de_inventario.id_producto, carga_de_inventario.id_carga";
         $result = mysqli_query($conexion, $sql);
         $ganancia_caja = 0;
         $perdidas = 0;
         $ganancia_real = 0;
+        $suma_bodega_menos_restantes = 0;
+        $tipo = 0;
         while ($ver1 = mysqli_fetch_row($result)) {
-            $ganancia_caja = $ganancia_caja + (($ver1[4] - $ver1[5]) * ($ver1[12]) * $ver1[11]);
-            $perdidas = $perdidas + ($ver1[5] * $ver1[14]);
-            $ganancia_real = $ganancia_real + ((($ver1[4] - $ver1[5]) * ($ver1[14])) * $ver1[11]);
+            if ($ver1[7] != null && $ver1[6] == 2) {
+                $tipo = 2;/* se hacen operaciones */
+            } else if ($ver1[7] == null && $ver1[6] == 2) {
+                $tipo = 3;/* no se muesta nada */
+            } else {
+                $tipo = 1;/* operaciones normales */
+            }
+            $suma_bodega_menos_restantes = ($ver1[8] - $ver1[7]);
+
+            if ($tipo == 2) { //ganancias para productos incontables
+                $ganancia_caja = $ganancia_caja + (($suma_bodega_menos_restantes - $ver1[1]) * ($ver1[4]));
+            } else if ($ver1[6] == 1) { //ganancias caja para productos contables
+                $ganancia_caja = $ganancia_caja + (($ver1[0] - $ver1[1]) * ($ver1[4]));
+            }
+
+            if ($tipo == 2 || $tipo == 1) {
+                $perdidas = $perdidas + ($ver1[1] * $ver1[4]);
+            }
+
+            if ($tipo == 2) {
+                $ganancia_real = $ganancia_real + ((($suma_bodega_menos_restantes - $ver1[1]) * ($ver1[5])));
+            } else if ($tipo == 1) {
+                $ganancia_real = $ganancia_real + ((($ver1[0] - $ver1[1]) * ($ver1[5])));
+            }
         }
         $resultado = array(
             "1" => $ganancia_caja,
