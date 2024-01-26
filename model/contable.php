@@ -2,11 +2,228 @@
 class contable
 {
 
-    public function cargue_ingresos_egresos_reporte(){
+    public function consultar_reporte_de_ingresos_y_egresos()
+    {
+        unset($_SESSION['consultar_reporte_de_ingresos_y_egresos']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $fechainicio = $_POST['form1'];
+        $fechafin = $_POST['form2'];
+        $sql = "SELECT cocina_cargas.fecha, cocina_cargas.hora, cocina_productos.nombre, cocina_compradores.descripcion, cocina_cargas.cantidad, cocina_cargas.valor, cocina_cargas.descripcion, cocina_cargas.id_tipo FROM cocina_cargas
+        JOIN cocina_productos ON cocina_productos.id_producto = cocina_cargas.id_producto
+        JOIN cocina_compradores ON cocina_compradores.id_comprador = cocina_cargas.id_comprador where cocina_cargas.fecha >= '$fechainicio' AND cocina_cargas.fecha <= '$fechafin' order by cocina_cargas.id_cargas desc";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //
+                $ver1[1] . "||" . //
+                $ver1[2] . "||" . //
+                $ver1[3] . "||" . //
+                $ver1[4] . "||" . //
+                $ver1[5] . "||" . //
+                $ver1[6] . "||" . //
+                $ver1[7] . "||"; //
+            $_SESSION['consultar_reporte_de_ingresos_y_egresos'][] = $tabla;
+        }
+        if (isset($_SESSION['consultar_reporte_de_ingresos_y_egresos'])) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+    public function buscar_lista_de_gastos_cocina()
+    {
+        unset($_SESSION['buscar_lista_de_gastos_cocina']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $fechainicio = $_POST['form1'];
+        $fechafin = $_POST['form2'];
+        $sql = "SELECT cocina_cargas.fecha, cocina_cargas.hora, cocina_productos.nombre, cocina_compradores.descripcion, cocina_cargas.cantidad, cocina_cargas.valor, cocina_cargas.descripcion FROM cocina_cargas
+        JOIN cocina_productos ON cocina_productos.id_producto = cocina_cargas.id_producto
+        JOIN cocina_compradores ON cocina_compradores.id_comprador = cocina_cargas.id_comprador where cocina_cargas.id_tipo = 7 and cocina_cargas.fecha >= '$fechainicio' AND cocina_cargas.fecha <= '$fechafin' order by cocina_cargas.id_cargas desc";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //
+                $ver1[1] . "||" . //
+                $ver1[2] . "||" . //
+                $ver1[3] . "||" . //
+                $ver1[4] . "||" . //
+                $ver1[5] . "||" . //
+                $ver1[6] . "||"; //
+            $_SESSION['buscar_lista_de_gastos_cocina'][] = $tabla;
+        }
+        if (isset($_SESSION['buscar_lista_de_gastos_cocina'])) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+
+    public function agregar_nuevo_gasto()
+    {
+        require_once "conexion.php";
+        $conexion = conexion();
+        $descripcion = $_POST['form1'];
+        $valor = $_POST['form2'];
+        $sql = "INSERT INTO cocina_cargas VALUES ('',curdate(),curtime(),7,1,1,'$descripcion','$valor',NULL)";
+        $result = mysqli_query($conexion, $sql);
+        if ($result) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+    public function agregar_venta_cocina()
+    {
+        require_once "conexion.php";
+        $conexion = conexion();
+        $cantidad = $_POST['form1'];
+        $valor = $_POST['form2'];
+        $productos = $_POST['form3'];
+        $compradores = $_POST['form4'];
+        $sql = "INSERT INTO cocina_cargas VALUES ('',curdate(),curtime(),6,'$productos','$compradores',NULL,'$valor','$cantidad')";
+        $result = mysqli_query($conexion, $sql);
+        if ($result) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+    public function buscar_lista_de_ingresos_cocina()
+    {
+        unset($_SESSION['buscar_lista_de_ingresos_cocina']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $fechainicio = $_POST['form1'];
+        $fechafin = $_POST['form2'];
+        $sql = "SELECT cocina_cargas.fecha, cocina_cargas.hora, cocina_productos.nombre, cocina_compradores.descripcion, cocina_cargas.cantidad, cocina_cargas.valor FROM cocina_cargas
+        JOIN cocina_productos ON cocina_productos.id_producto = cocina_cargas.id_producto
+        JOIN cocina_compradores ON cocina_compradores.id_comprador = cocina_cargas.id_comprador where cocina_cargas.id_tipo = 6 and cocina_cargas.fecha >= '$fechainicio' AND cocina_cargas.fecha <= '$fechafin' order by cocina_cargas.id_cargas desc";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //
+                $ver1[1] . "||" . //
+                $ver1[2] . "||" . //
+                $ver1[3] . "||" . //
+                $ver1[4] . "||" . //
+                $ver1[5] . "||"; //
+            $_SESSION['buscar_lista_de_ingresos_cocina'][] = $tabla;
+        }
+        if (isset($_SESSION['buscar_lista_de_ingresos_cocina'])) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+    public function agregar_comprador()
+    {
+        require_once "conexion.php";
+        $conexion = conexion();
+        $descripcion = $_POST['form1'];
+        $sql = "INSERT INTO cocina_compradores VALUES ('','$descripcion')";
+        $result = mysqli_query($conexion, $sql);
+        if ($result) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+    public function buscar_lista_de_productos_cocina()
+    {
+        unset($_SESSION['buscar_lista_de_productos_cocina']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $sql = "SELECT * FROM cocina_productos where estado = 1";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //id
+                $ver1[1] . "||"; //descripcion
+            $_SESSION['buscar_lista_de_productos_cocina'][] = $tabla;
+        }
+        if (isset($_SESSION['buscar_lista_de_productos_cocina'])) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+    public function buscar_lista_de_compradores()
+    {
+        unset($_SESSION['buscar_lista_de_compradores']);
+        require_once "conexion.php";
+        $conexion = conexion();
+        $sql = "SELECT * FROM cocina_compradores where estado = 1";
+        $result = mysqli_query($conexion, $sql);
+        while ($ver1 = mysqli_fetch_row($result)) {
+            $tabla = $ver1[0] . "||" . //id
+                $ver1[1] . "||"; //descripcion
+            $_SESSION['buscar_lista_de_compradores'][] = $tabla;
+        }
+        if (isset($_SESSION['buscar_lista_de_compradores'])) {
+            echo 1;
+        } else {
+            echo 2;
+        }
+    }
+
+    public function carga_masiva_de_valores_inventario()
+    {
+        require_once "conexion.php";
+        $conexion = conexion();
+        $id_producto = $_POST['form1'];
+        $sql1 = "SELECT * FROM carga_de_inventario WHERE fecha = CURDATE() AND id_producto = '$id_producto' order by id_carga desc";
+        $result = mysqli_query($conexion, $sql1);
+        $ver = mysqli_fetch_row($result);
+        $datos = array(
+            "1" => $ver[4], //ingreso
+            "2" => $ver[5], //perdida
+            "3" => $ver[7], //restantes
+        );
+        return $datos;
+    }
+
+    public function valores_fiado_y_conteo_caja()
+    {
+        require_once "conexion.php";
+        $conexion = conexion();
+
+        $sql1 = "SELECT * FROM registro_diario WHERE fecha = CURDATE()";
+        $result = mysqli_query($conexion, $sql1);
+        $ver = mysqli_fetch_row($result);
+        $datos = array(
+            "1" => $ver[6], //caja
+            "2" => $ver[8] //fiado
+        );
+        return $datos;
+    }
+
+
+    public function cargar_valores_moneda()
+    {
+        require_once "conexion.php";
+        $conexion = conexion();
+
+        $sql1 = "SELECT * FROM base_cartera WHERE fecha = CURDATE()";
+        $result = mysqli_query($conexion, $sql1);
+        $ver = mysqli_fetch_row($result);
+        $datos = array(
+            "1" => $ver[3], //moneda
+            "2" => $ver[4] //billete
+        );
+        return $datos;
+    }
+
+    public function cargue_ingresos_egresos_reporte()
+    {
         unset($_SESSION['cargue_ingresos_egresos_reporte']);
         require_once "conexion.php";
         $conexion = conexion();
-        $inicio = $_POST['form1'];$fin = $_POST['form2'];
+        $inicio = $_POST['form1'];
+        $fin = $_POST['form2'];
         $sql = "SELECT * FROM registro_diario WHERE fecha >= '$inicio' AND fecha <= '$fin'";
         $result = mysqli_query($conexion, $sql);
         while ($ver1 = mysqli_fetch_row($result)) {
@@ -18,19 +235,20 @@ class contable
                 $ver1[5] . "||" . //
                 $ver1[6] . "||" . //
                 $ver1[7] . "||" . //
-                $ver1[8] . "||" ; //
+                $ver1[8] . "||"; //
             $_SESSION['cargue_ingresos_egresos_reporte'][] = $tabla;
         }
-        if (isset($_SESSION['cargue_ingresos_egresos_reporte'])){
+        if (isset($_SESSION['cargue_ingresos_egresos_reporte'])) {
             echo 1;
-        }else{
+        } else {
             echo 2;
         }
     }
 
     public function cargar_tabla_temp_de_egresos_por_fecha()
     {
-        $inicio = $_POST['form1'];$fin = $_POST['form2'];
+        $inicio = $_POST['form1'];
+        $fin = $_POST['form2'];
         unset($_SESSION['cargar_tabla_temp_de_egresos_por_fecha']);
         require_once "conexion.php";
         $conexion = conexion();
@@ -50,14 +268,15 @@ class contable
                 $ver1[10] . "||"; //
             $_SESSION['cargar_tabla_temp_de_egresos_por_fecha'][] = $tabla;
         }
-        if (isset($_SESSION['cargar_tabla_temp_de_egresos_por_fecha'])){
+        if (isset($_SESSION['cargar_tabla_temp_de_egresos_por_fecha'])) {
             echo 1;
-        }else{
+        } else {
             echo 2;
         }
     }
 
-    public function cargue_inventario_incontables(){
+    public function cargue_inventario_incontables()
+    {
         unset($_SESSION['cargue_inventario_incontables']);
         require_once "conexion.php";
         $conexion = conexion();
@@ -71,15 +290,14 @@ class contable
                 $ver1[1] . "||" . //hora
                 $ver1[2] . "||" . //nombre
                 $ver1[3] . "||" . //cantidad x paquete
-                $ver1[4] . "||" ; // restante
+                $ver1[4] . "||"; // restante
             $_SESSION['cargue_inventario_incontables'][] = $tabla;
         }
-        if (isset($_SESSION['cargue_inventario_incontables'])){
+        if (isset($_SESSION['cargue_inventario_incontables'])) {
             echo 1;
-        }else{
+        } else {
             echo 2;
         }
-
     }
 
 
@@ -292,7 +510,7 @@ class contable
             $result = mysqli_query($conexion, $sql);
             if ($result) {
                 $result = self::consultar_datos_base_cartera(2);
-                $resultado = self::crear_registro_dia($result[0], $total_caja,$total_fiado);
+                $resultado = self::crear_registro_dia($result[0], $total_caja, $total_fiado);
             } else {
                 echo 2;
             }
@@ -301,7 +519,7 @@ class contable
             $sql = "UPDATE base_cartera SET valor_moneda = '$moneda', valor_billete = '$billete' WHERE id_base = '$ver[0]' and fecha = CURDATE()";
             $result = mysqli_query($conexion, $sql);
             if ($result) {
-                $resultado = self::crear_registro_dia($ver[0], $total_caja,$total_fiado);
+                $resultado = self::crear_registro_dia($ver[0], $total_caja, $total_fiado);
             } else {
                 echo 4;
             }

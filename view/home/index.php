@@ -97,6 +97,8 @@
 
     function cargue() {
         listado_cargados_temp();
+        valores_moneda();
+        valores_fiado_y_conteo_caja();
         $.ajax({
             type: "POST",
             url: "../../controller/cargue_general.php",
@@ -106,6 +108,28 @@
                     return false;
                 }
             }
+        });
+    }
+    function valores_moneda(){
+        $.ajax({
+            type: "POST",
+            url: "../../controller/cargar_valores_moneda.php",
+            success: function(r) {
+                    dato = jQuery.parseJSON(r);
+                    $('#base_moneda').val(dato['1']);
+                    $('#base_billete').val(dato['2']);
+                }
+        });
+    }
+    function valores_fiado_y_conteo_caja(){
+        $.ajax({
+            type: "POST",
+            url: "../../controller/valores_fiado_y_conteo_caja.php",
+            success: function(r) {
+                    dato = jQuery.parseJSON(r);
+                    $('#conteo_final').val(dato['1']);
+                    $('#conteo_fiado').val(dato['2']);
+                }
         });
     }
 
