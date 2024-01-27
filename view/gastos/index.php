@@ -135,7 +135,7 @@ $fecha_actual = date("Y-m-d");?>
             url: "../../controller/cargar_tabla_temp_de_egresos.php", //validacion de datos de registro
             success: function(r) {
                 if (r == 1) {
-                    $('#cargue_de_tabla').load("tabla_cargue_temp.php");
+                    $('#cargue_tabla').load("tabla_cargue_temp.php");
                     return false;
                 }
             }
@@ -158,7 +158,7 @@ $fecha_actual = date("Y-m-d");?>
                 data: cadena,
                 success: function(r) {
                     if (r == 1) {
-                        buscarlistadeegresos();
+                        buscar_registros_por_fechas();
                         alertify.success("Egreso agregado");
                         if (id == 1) {
                             $('#descripcion').val("");
@@ -168,7 +168,7 @@ $fecha_actual = date("Y-m-d");?>
                     } else if (r == 2) {
                         alertify.error("Error al agregar");
                     } else if (r == 3) {
-                        buscarlistadeegresos();
+                        buscar_registros_por_fechas();
                         alertify.success("Egreso Actualizado, recuerda, volver a buscar");
                     } else if (r == 4) {
                         alertify.error("Error al Actualizar");

@@ -43,6 +43,12 @@ session_start();
                 <td class="text-center"><b>$<?php echo number_format($egresos); ?></b></td>
                 <td colspan="2" ></td>
             </tr>
+            <tr class="table-info">
+                <td colspan="2"></td>
+                <td class="text-center bg-info" colspan=""><b>DIFERENCIA</b></td>
+                <td class="text-center"><b>$<?php echo number_format($ingresos - $egresos); ?></b></td>
+                <td colspan="2" ></td>
+            </tr>
 </table>
 
 <style>

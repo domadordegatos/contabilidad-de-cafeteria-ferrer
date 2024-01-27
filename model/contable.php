@@ -431,7 +431,7 @@ class contable
         require_once "conexion.php";
         $conexion = conexion();
         $sql = "SELECT * FROM productos
-        JOIN tipos_productos ON tipos_productos.id_tipo = productos.tipo order by id_producto desc";
+        JOIN tipos_productos ON tipos_productos.id_tipo = productos.tipo order by nombre asc";
         $result = mysqli_query($conexion, $sql);
         while ($ver1 = mysqli_fetch_row($result)) {
             $tabla = $ver1[0] . "||" . //id

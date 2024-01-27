@@ -20,7 +20,7 @@
           COCINA
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="../compradores/index.php">Compradores</a>
+          <!-- <a class="dropdown-item" href="../compradores/index.php">Compradores</a> -->
           <a class="dropdown-item" href="../ventas_cocina/index.php">Registrar Ventas</a>
           <a class="dropdown-item" href="../reporte_cocina/index.php">Reporte Cocina</a>
           <a class="dropdown-item" href="../gastos_cocina/index.php">Gastos Cocina</a>
