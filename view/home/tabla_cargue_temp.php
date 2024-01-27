@@ -42,7 +42,7 @@ session_start();
             <tr>
                 <td><?php echo $dat[1] ?></td>
                 <td><?php echo "$" . number_format($dat[2]); ?></td>
-                <td><button type="button" class="btn btn-primary" onclick="subir(<?php echo $id_producto; ?>)"><i class="bi bi-arrow-up-circle-fill"></i></button></td>
+                <td class="text-center"><button type="button" class="btn btn-primary" onclick="subir(<?php echo $id_producto; ?>)"><i class="bi bi-arrow-up-circle-fill"></i></button></td>
                 <td><input type="number" class="form-control form-control-sm" id="ingreso<?php echo $id_producto; ?>"></td>
                 <td><input type="number" class="form-control form-control-sm" id="perdida<?php echo $id_producto; ?>"></td>
                 <td><input <?php if ($dat[3] == 1) echo 'disabled'; ?> type="number" class="form-control form-control-sm" id="restantes<?php echo $id_producto; ?>"></td>

@@ -181,7 +181,7 @@ class contable
         $datos = array(
             "1" => $ver[4], //ingreso
             "2" => $ver[5], //perdida
-            "3" => $ver[7], //restantes
+            "3" => $ver[6], //restantes 
         );
         return $datos;
     }
@@ -602,7 +602,7 @@ class contable
         unset($_SESSION['tabla_cargue']);
         require_once "conexion.php";
         $conexion = conexion();
-        $sql = "SELECT * FROM productos WHERE estado = 1";
+        $sql = "SELECT * FROM productos WHERE estado = 1 order by nombre asc";
         $result = mysqli_query($conexion, $sql);
         while ($ver1 = mysqli_fetch_row($result)) {
             $tabla = $ver1[0] . "||" . //id
@@ -746,16 +746,24 @@ class contable
                 }
 
                 if ($result) {
-                    if ($datos_producto[6] == 2) { //proceso para no cotables
+                    if ($datos_producto[6] == 2) { //proceso para no contables
                         $penultimo_registro = self::obtener_penultimo_registro($id_producto, 2);
-                        //ya hay registros hoy
-                        $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'";
-                        $result = mysqli_query($conexion, $sql);
+                
+                        // Verifica si $penultimo_registro no es null antes de intentar acceder a un índice
+                        if ($penultimo_registro !== null) {
+                            // ya hay registros hoy
+                            $sql = "UPDATE carga_de_inventario SET acumulante = '$restantes' WHERE id_carga = '$penultimo_registro[0]'";
+                            $result = mysqli_query($conexion, $sql);
+                            echo 3;
+                        } else {
+                            // No hay registros anteriores
+                            echo 3;
+                        }
                     }
-                    echo 3;
                 } else {
                     echo 4;
                 }
+                
             }
         }
     }
